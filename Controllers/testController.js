@@ -24,12 +24,61 @@ exports.verifyWebhook = (req, res) => {
 };
 
 // ✅ Handle POST request (incoming messages)
-exports.receiveMessage = (req, res) => {
+exports.receiveMessage = async(req, res) => {
+ 
   console.log("📩 Incoming webhook:", JSON.stringify(req.body, null, 2));
 
-  // Always return 200 to tell Meta you received the update
-  res.sendStatus(200);
+  try {
+    const entry = req.body.entry?.[0];
+    const changes = entry?.changes?.[0];
+    const value = changes?.value;
+    const message = value?.messages?.[0];
+
+    if (message) {
+      const from = message.from; // sender number
+      const text = message.text?.body?.toLowerCase(); // message content
+
+      console.log(`📨 Message from ${from}: ${text}`);
+
+      // If user sends "hi", reply with welcome message
+      if (text === "hi") {
+        await sendReply(from, "👋 Welcome! Thanks for saying hi!");
+      }
+    }
+  } catch (err) {
+    console.error("❌ Error handling message:", err.message);
+  }
+
+  res.sendStatus(200); // Tell WhatsApp we received the message
 };
+
+// ✅ Helper function to send WhatsApp message
+async function sendReply(to, body) {
+  try {
+    const response = await axios.post(
+      `https://graph.facebook.com/v22.0/${PHONE_NUMBER_ID}/messages`,
+      {
+        messaging_product: "whatsapp",
+        to,
+        type: "text",
+        text: { body },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Reply sent:", response.data);
+  } catch (error) {
+    console.error(
+      "❌ Failed to send reply:",
+      error.response?.data || error.message
+    );
+  }
+}
 
 
 exports.startMessage=async(req,res)=>{
