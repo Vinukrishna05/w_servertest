@@ -33,15 +33,24 @@ exports.receiveMessage = async (req, res) => {
     console.log("📩 Incoming Payload:", JSON.stringify(req.body, null, 2));
 
     const entry = req.body.entry?.[0];
-    const message = entry?.changes?.[0]?.value?.messages?.[0];
+    const changes = entry?.changes?.[0];
+    const value = changes?.value;
 
+    // 🛑 Ignore delivery/read status updates
+    if (value?.statuses) {
+      console.log("ℹ️ Ignored status update:", value.statuses[0]);
+      return res.sendStatus(200);
+    }
+
+    // ✅ Handle actual messages
+    const message = value?.messages?.[0];
     if (!message) return res.sendStatus(200);
 
     const from = message.from;
     const session = getSession(from);
     console.log("🗂 Current session:", session);
 
-   switch (message.type) {
+    switch (message.type) {
       case "text":
         await handleTextMessage(from, message.text.body);
         break;

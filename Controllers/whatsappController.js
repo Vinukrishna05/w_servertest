@@ -55,3 +55,21 @@ exports.sendCareButtons = async (to) => {
     }
   }, { headers: { Authorization: `Bearer ${token}` } });
 };
+
+exports.sendButtons = async (to, text, buttons) => {
+  await axios.post(apiUrl, {
+    messaging_product: "whatsapp",
+    to,
+    type: "interactive",
+    interactive: {
+      type: "button",
+      body: { text },
+      action: {
+        buttons: buttons.map(b => ({
+          type: "reply",
+          reply: { id: b.id, title: b.title }
+        }))
+      }
+    }
+  }, { headers: { Authorization: `Bearer ${token}` } });
+};
