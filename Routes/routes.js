@@ -1,16 +1,12 @@
 const express=require('express')
 
-// const testController=require('../Controllers/testController')
-const webhookController = require("../Controllers/webhookController");
+const webHookController = require("../Controllers/webhookController");
 
 
 const router=express.Router()
 
-// router.get("/webhook", testController.verifyWebhook);
-// router.post("/webhook", testController.receiveMessage);
-
-router.get("/webhook", webhookController.verifyWebhook);
-router.post("/webhook", webhookController.receiveMessage);
+router.get("/webhook", webHookController.verifyWebhook);
+router.post("/webhook", webHookController.receiveMessage);
 
 
 
